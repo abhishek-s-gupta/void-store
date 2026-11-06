@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Account — VOID STORE{% endblock %}
+{% block description %}Create a VOID STORE account to track orders and save your curated wardrobe.{% endblock %}
+
+{% block content %}
+<div class="auth-page container">
+
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <span class="auth-eyebrow">NEW CLIENT REGISTRATION</span>
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-sub">Register to save runway looks, access expedited checkout, and manage past order history.</p>
+    </div>
+
+    <form method="post" action="{% url 'register' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="auth-form" id="register-form">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="form-errors-box" role="alert">
+          {% for err in form.non_field_errors %}
+            <p>{{ err }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label for="id_first_name" class="form-label">First Name *</label>
+          {{ form.first_name }}
+          {% if form.first_name.errors %}<span class="field-error">{{ form.first_name.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="id_last_name" class="form-label">Last Name *</label>
+          {{ form.last_name }}
+          {% if form.last_name.errors %}<span class="field-error">{{ form.last_name.errors.0 }}</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="id_username" class="form-label">Username *</label>
+        {{ form.username }}
+        {% if form.username.errors %}<span class="field-error">{{ form.username.errors.0 }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_email" class="form-label">Email Address *</label>
+        {{ form.email }}
+        {% if form.email.errors %}<span class="field-error">{{ form.email.errors.0 }}</span>{% endif %}
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label for="id_password" class="form-label">Password *</label>
+          {{ form.password }}
+          {% if form.password.errors %}<span class="field-error">{{ form.password.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="id_confirm_password" class="form-label">Confirm Password *</label>
+          {{ form.confirm_password }}
+          {% if form.confirm_password.errors %}<span class="field-error">{{ form.confirm_password.errors.0 }}</span>{% endif %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn-dark full-w auth-submit-btn">
+        Create Account & Sign In →
+      </button>
+    </form>
+
+    <div class="auth-card-footer">
+      <p>Already have an account? <a href="{% url 'login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">Sign in here</a>.</p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

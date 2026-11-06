@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Shop All Streetwear Essentials — VOID STORE{% endblock %}
+{% block description %}Explore the complete VOID STORE collection: engineered footwear, heavyweight boxy tees, and minimalist loopback fleece hoodies.{% endblock %}
+
+{% block content %}
+<div class="shop-page container">
+
+  <!-- Breadcrumbs & Heading -->
+  <header class="shop-header">
+    <div class="shop-title-area">
+      <span class="shop-eyebrow">VOID ARCHIVE / CATALOG</span>
+      <h1 class="shop-title">Streetwear Essentials</h1>
+      <p class="shop-subtitle">Eight architectural silhouettes designed with heavyweight cottons, full-grain leathers, and monochromatic tonal finishes.</p>
+    </div>
+
+    <!-- Active Filters & Count Indicator -->
+    <div class="shop-meta-bar">
+      <span class="shop-count">Showing <strong>{{ total_count }}</strong> piece{{ total_count|pluralize }}</span>
+      {% if query %}
+        <span class="search-tag">Search query: "<strong>{{ query }}</strong>" <a href="{% url 'shop' %}" class="clear-search">✕</a></span>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Controls Bar: Category Pills + Search Box + Sort Dropdown -->
+  <section class="shop-controls" aria-label="Catalog Filters">
+    <!-- Category Filter Rail -->
+    <nav class="category-nav" aria-label="Filter by Category">
+      <a href="{% url 'shop' %}{% if query %}?q={{ query }}{% endif %}" class="cat-pill {% if not active_category %}is-active{% endif %}">All Essentials</a>
+      {% for cat in categories %}
+        <a href="{% url 'shop' %}?category={{ cat.slug }}{% if query %}&q={{ query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="cat-pill {% if active_category == cat.slug %}is-active{% endif %}">
+          {{ cat.name }}
+        </a>
+      {% endfor %}
+    </nav>
+
+    <!-- Search & Sort Controls -->
+    <div class="shop-actions">
+      <!-- Search Form -->
+      <form method="get" action="{% url 'shop' %}" class="shop-search-form" role="search">
+        {% if active_category %}<input type="hidden" name="category" value="{{ active_category }}">{% endif %}
+        {% if sort_by %}<input type="hidden" name="sort" value="{{ sort_by }}">{% endif %}
+        <div class="search-input-wrapper">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="search" name="q" value="{{ query }}" placeholder="Search pieces or fabrics..." class="search-field" aria-label="Search products">
+          {% if query %}
+            <a href="{% url 'shop' %}{% if active_category %}?category={{ active_category }}{% endif %}" class="search-clear-btn" aria-label="Clear search">✕</a>
+          {% endif %}
+        </div>
+      </form>
+
+      <!-- Sort Selector -->
+      <div class="shop-sort-wrapper">
+        <label for="sort-select" class="sort-label">Sort by:</label>
+        <select id="sort-select" class="sort-select" onchange="window.location.href=this.value" aria-label="Sort products">
+          <option value="{% url 'shop' %}?sort=featured{% if active_category %}&category={{ active_category }}{% endif %}{% if query %}&q={{ query }}{% endif %}" {% if sort_by == 'featured' %}selected{% endif %}>Curated</option>
+          <option value="{% url 'shop' %}?sort=price_asc{% if active_category %}&category={{ active_category }}{% endif %}{% if query %}&q={{ query }}{% endif %}" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+          <option value="{% url 'shop' %}?sort=price_desc{% if active_category %}&category={{ active_category }}{% endif %}{% if query %}&q={{ query }}{% endif %}" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+          <option value="{% url 'shop' %}?sort=newest{% if active_category %}&category={{ active_category }}{% endif %}{% if query %}&q={{ query }}{% endif %}" {% if sort_by == 'newest' %}selected{% endif %}>Newest Drops</option>
+          <option value="{% url 'shop' %}?sort=name{% if active_category %}&category={{ active_category }}{% endif %}{% if query %}&q={{ query }}{% endif %}" {% if sort_by == 'name' %}selected{% endif %}>Alphabetical</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Grid -->
+  <section class="products-grid-section">
+    {% if products %}
+      <div class="products-grid">
+        {% for prod in products %}
+          <article class="product-card" data-slug="{{ prod.slug }}">
+            <!-- Card Media -->
+            <a href="{{ prod.get_absolute_url }}" class="product-card-media" aria-label="View {{ prod.name }}">
+              <div class="product-media-inner">
+                <img src="{% static prod.image %}" alt="{{ prod.name }}" loading="lazy" decoding="async">
+              </div>
+              {% if prod.original_price %}
+                <span class="card-badge sale-badge">SALE</span>
+              {% elif prod.is_featured %}
+                <span class="card-badge">ESSENTIAL</span>
+              {% endif %}
+            </a>
+
+            <!-- Card Info -->
+            <div class="product-card-info">
+              <span class="product-card-vendor">{{ prod.vendor }}</span>
+              <h2 class="product-card-title">
+                <a href="{{ prod.get_absolute_url }}">{{ prod.name }}</a>
+              </h2>
+
+              <div class="product-card-price-row">
+                <span class="product-card-price">${{ prod.price }}</span>
+                {% if prod.original_price %}
+                  <s class="product-card-orig-price">${{ prod.original_price }}</s>
+                {% endif %}
+              </div>
+
+              <!-- Available Sizes Chips -->
+              <div class="product-card-sizes" aria-label="Available sizes">
+                {% for sz in prod.size_list %}
+                  <span class="size-chip">{{ sz }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Quick View / Details Link -->
+              <div class="product-card-actions">
+                <a href="{{ prod.get_absolute_url }}" class="card-action-btn">Inspect Piece →</a>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no-products-state">
+        <p class="no-products-title">No pieces found matching your filter.</p>
+        <p class="no-products-sub">Try searching with a broader keyword or browse all catalog essentials.</p>
+        <a href="{% url 'shop' %}" class="btn-dark sm">Reset Filters</a>
+      </div>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

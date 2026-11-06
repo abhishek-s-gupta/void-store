@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.shortcuts import redirect, render
+from orders.cart import merge_session_cart
 from .forms import UserLoginForm, UserRegisterForm
 
 
@@ -12,11 +13,14 @@ def register_view(request):
     if request.method == "POST":
         form = UserRegisterForm(request.POST)
         if form.is_valid():
+            old_session_key = request.session.session_key
             user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
             user.save()
             # Log the user in directly
             login(request, user)
+            # Merge guest cart
+            merge_session_cart(user, old_session_key)
             messages.success(request, f"Welcome to VOID STORE, {user.first_name or user.username}. Your account is ready.")
             next_url = request.GET.get("next") or "home"
             return redirect(next_url)
@@ -36,8 +40,11 @@ def login_view(request):
     if request.method == "POST":
         form = UserLoginForm(request.POST)
         if form.is_valid():
+            old_session_key = request.session.session_key
             user = form.cleaned_data["user"]
             login(request, user)
+            # Merge guest cart
+            merge_session_cart(user, old_session_key)
             messages.success(request, f"Welcome back, {user.first_name or user.username}.")
             next_url = request.GET.get("next") or "home"
             return redirect(next_url)

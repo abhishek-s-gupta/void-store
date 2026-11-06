@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Orders — VOID STORE{% endblock %}
+{% block description %}Track and review your past VOID STORE orders.{% endblock %}
+
+{% block content %}
+<div class="orders-page container">
+
+  <header class="orders-page-header">
+    <div class="header-split">
+      <div>
+        <span class="page-eyebrow">CUSTOMER PORTAL</span>
+        <h1 class="page-title">My Orders</h1>
+        <p class="page-sub">Signed in as <strong>{{ user.username }}</strong> ({{ user.email }}). Review your order records and fulfillment progress.</p>
+      </div>
+      <div class="user-action-pill">
+        <a href="{% url 'logout' %}" class="btn-outline sm">Sign Out</a>
+      </div>
+    </div>
+  </header>
+
+  {% if orders %}
+    <div class="orders-list">
+      {% for order in orders %}
+        <article class="order-card">
+          <!-- Order Header Bar -->
+          <div class="order-card-header">
+            <div class="order-meta-group">
+              <span class="order-label">Order Reference</span>
+              <strong class="order-number">#{{ order.order_number }}</strong>
+            </div>
+            <div class="order-meta-group">
+              <span class="order-label">Date Placed</span>
+              <span class="order-date">{{ order.created_at|date:"F j, Y, g:i a" }}</span>
+            </div>
+            <div class="order-meta-group">
+              <span class="order-label">Total Amount</span>
+              <strong class="order-total-price">${{ order.total }}</strong>
+            </div>
+            <div class="order-meta-group">
+              <span class="order-label">Status</span>
+              <span class="status-pill status-{{ order.status }}">{{ order.get_status_display }}</span>
+            </div>
+          </div>
+
+          <!-- Items Inside Order -->
+          <div class="order-card-body">
+            <ul class="order-items-grid">
+              {% for item in order.items.all %}
+                <li class="order-item-card">
+                  <div class="order-item-thumb">
+                    <img src="{% static item.product.image %}" alt="{{ item.product.name }}">
+                  </div>
+                  <div class="order-item-info">
+                    <h4 class="order-item-name">
+                      <a href="{% url 'product_detail' item.product.slug %}">{{ item.product.name }}</a>
+                    </h4>
+                    <span class="order-item-sub">Size: {{ item.size }} · Qty: {{ item.quantity }}</span>
+                    {% if item.is_bundle_item %}
+                      <span class="order-bundle-pill">Look Bundle Item (10% Off)</span>
+                    {% endif %}
+                    <span class="order-item-price">${{ item.line_total }}</span>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+
+            <!-- Order Shipping Details -->
+            <div class="order-shipment-meta">
+              <span><strong>Delivering to:</strong> {{ order.full_name }} — {{ order.address }}, {{ order.city }} ({{ order.phone }})</span>
+              <span><strong>Payment:</strong> {{ order.payment_method }}</span>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="orders-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+      </svg>
+      <h2 class="empty-title">No orders found</h2>
+      <p class="empty-sub">You haven't placed any orders yet. Discover our latest runway drop.</p>
+      <a href="{% url 'shop' %}" class="btn-dark">Explore Essentials Collection →</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

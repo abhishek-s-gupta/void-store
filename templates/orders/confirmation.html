@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Order Confirmed #{{ order.order_number }} — VOID STORE{% endblock %}
+{% block description %}Thank you for your order with VOID STORE.{% endblock %}
+
+{% block content %}
+<div class="confirmation-page container">
+
+  <div class="confirmation-card">
+    <!-- Success Badge -->
+    <div class="confirm-icon-wrap">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    </div>
+
+    <span class="confirm-eyebrow">ORDER CONFIRMED</span>
+    <h1 class="confirm-title">Thank you, {{ order.full_name }}</h1>
+    <p class="confirm-sub">Your order <strong>#{{ order.order_number }}</strong> has been recorded and is staged for dispatch.</p>
+
+    <!-- Confirmation Grid -->
+    <div class="confirm-details-grid">
+      <!-- Shipping Details -->
+      <div class="confirm-block">
+        <h3 class="block-title">Shipping & Delivery Details</h3>
+        <p class="meta-line"><strong>Recipient:</strong> {{ order.full_name }}</p>
+        <p class="meta-line"><strong>Email:</strong> {{ order.email }}</p>
+        <p class="meta-line"><strong>Phone:</strong> {{ order.phone }}</p>
+        <p class="meta-line"><strong>Address:</strong> {{ order.address }}, {{ order.city }} {{ order.postal_code }}</p>
+        <p class="meta-line"><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+        <p class="meta-line"><strong>Status:</strong> <span class="status-pill status-{{ order.status }}">{{ order.get_status_display }}</span></p>
+      </div>
+
+      <!-- Order Receipt Items -->
+      <div class="confirm-block">
+        <h3 class="block-title">Order Items ({{ order.total_items }})</h3>
+        <ul class="confirm-items-list">
+          {% for item in order.items.all %}
+            <li class="confirm-item-row">
+              <div class="confirm-item-thumb">
+                <img src="{% static item.product.image %}" alt="{{ item.product.name }}">
+              </div>
+              <div class="confirm-item-info">
+                <span class="confirm-item-name">{{ item.product.name }}</span>
+                <span class="confirm-item-size">Size: {{ item.size }} · Qty: {{ item.quantity }}</span>
+                {% if item.is_bundle_item %}
+                  <span class="confirm-bundle-tag">10% Bundle Discount Applied</span>
+                {% endif %}
+              </div>
+              <span class="confirm-item-price">${{ item.line_total }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <div class="confirm-totals">
+          <div class="confirm-row">
+            <span>Subtotal</span>
+            <span>${{ order.subtotal }}</span>
+          </div>
+          {% if order.discount > 0 %}
+            <div class="confirm-row discount-row">
+              <span>Bundle Discount Savings</span>
+              <span>−${{ order.discount }}</span>
+            </div>
+          {% endif %}
+          <div class="confirm-row total-row">
+            <span>Total Paid (COD Mock)</span>
+            <strong>${{ order.total }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="confirm-actions">
+      {% if user.is_authenticated %}
+        <a href="{% url 'my_orders' %}" class="btn-dark">View My Orders History →</a>
+      {% endif %}
+      <a href="{% url 'shop' %}" class="btn-outline">Continue Shopping</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout — VOID STORE{% endblock %}
+{% block description %}Complete your VOID STORE order with express delivery and mock payment.{% endblock %}
+
+{% block content %}
+<div class="checkout-page container">
+
+  <header class="checkout-header">
+    <span class="page-eyebrow">FINAL STEP</span>
+    <h1 class="page-title">Express Checkout</h1>
+    <p class="page-sub">Enter your delivery details to complete your order. Payment is verified via mock cash on delivery.</p>
+  </header>
+
+  <div class="checkout-grid">
+    <!-- Left: Form -->
+    <section class="checkout-form-section" aria-label="Customer Information">
+      <form method="post" action="{% url 'checkout' %}" class="checkout-form" id="checkout-form">
+        {% csrf_token %}
+
+        <!-- Contact Section -->
+        <div class="form-block">
+          <h2 class="form-block-title">1. Contact & Recipient</h2>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="full_name" class="form-label">Full Name *</label>
+              <input type="text" id="full_name" name="full_name" class="form-input" required placeholder="e.g. Alexander Wright" value="{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% endif %}" autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label for="email" class="form-label">Email Address *</label>
+              <input type="email" id="email" name="email" class="form-input" required placeholder="alexander@example.com" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" autocomplete="email">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone" class="form-label">Contact Phone *</label>
+            <input type="tel" id="phone" name="phone" class="form-input" required placeholder="+1 (555) 019-2834" autocomplete="tel">
+          </div>
+        </div>
+
+        <hr class="form-divider">
+
+        <!-- Shipping Address Section -->
+        <div class="form-block">
+          <h2 class="form-block-title">2. Delivery Address</h2>
+          <div class="form-group">
+            <label for="address" class="form-label">Street Address *</label>
+            <textarea id="address" name="address" class="form-input form-textarea" rows="3" required placeholder="Apartment, suite, street name..." autocomplete="street-address"></textarea>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="city" class="form-label">City *</label>
+              <input type="text" id="city" name="city" class="form-input" required placeholder="e.g. New York" autocomplete="address-level2">
+            </div>
+            <div class="form-group">
+              <label for="postal_code" class="form-label">Postal / ZIP Code</label>
+              <input type="text" id="postal_code" name="postal_code" class="form-input" placeholder="10001" autocomplete="postal-code">
+            </div>
+          </div>
+        </div>
+
+        <hr class="form-divider">
+
+        <!-- Payment Method Section -->
+        <div class="form-block">
+          <h2 class="form-block-title">3. Payment Method</h2>
+          <div class="payment-options">
+            <label class="payment-card is-selected">
+              <input type="radio" name="payment_method" value="Cash on Delivery (Mock)" checked>
+              <div class="payment-card-content">
+                <strong>Cash on Delivery (Mock COD)</strong>
+                <span class="payment-sub">Pay upon physical package delivery. Zero upfront transaction fees.</span>
+              </div>
+            </label>
+            <label class="payment-card">
+              <input type="radio" name="payment_method" value="Mock Card Payment (Approved)">
+              <div class="payment-card-content">
+                <strong>Test Card / Digital Mock Payment</strong>
+                <span class="payment-sub">Instant sandbox payment approval for academic evaluation.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="checkout-submit-wrap">
+          <button type="submit" class="btn-dark full-w submit-order-btn">
+            Confirm & Place Order (${{ total }})
+          </button>
+          <p class="terms-note">By clicking "Confirm & Place Order", you authorize creation of order record #VOID in the database.</p>
+        </div>
+      </form>
+    </section>
+
+    <!-- Right: Order Summary Sidebar -->
+    <aside class="checkout-summary-section" aria-label="Order summary breakdown">
+      <div class="checkout-summary-card">
+        <h2 class="summary-card-title">Order Summary ({{ cart.total_items }})</h2>
+
+        <ul class="checkout-items-list">
+          {% for item in items %}
+            <li class="checkout-item-row">
+              <div class="checkout-item-thumb">
+                <img src="{% static item.variant.product.image %}" alt="{{ item.variant.product.name }}">
+                <span class="thumb-qty-badge">{{ item.quantity }}</span>
+              </div>
+              <div class="checkout-item-meta">
+                <h3 class="checkout-item-name">{{ item.variant.product.name }}</h3>
+                <span class="checkout-item-size">Size: {{ item.variant.size }}</span>
+                {% if item.is_bundle_item %}
+                  <span class="checkout-bundle-tag">10% Bundle Discount</span>
+                {% endif %}
+              </div>
+              <div class="checkout-item-price">
+                <span>${{ item.discounted_line_total }}</span>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <hr class="summary-divider">
+
+        <div class="summary-breakdown">
+          <div class="breakdown-row">
+            <span>Subtotal</span>
+            <span>${{ subtotal }}</span>
+          </div>
+
+          {% if discount > 0 %}
+            <div class="breakdown-row discount-row">
+              <span>Runway Bundle Savings (10%)</span>
+              <span class="save-val">−${{ discount }}</span>
+            </div>
+          {% endif %}
+
+          <div class="breakdown-row">
+            <span>Express Delivery</span>
+            <span>Free (Complimentary)</span>
+          </div>
+
+          <hr class="summary-divider">
+
+          <div class="breakdown-row total-row">
+            <span>Payable Total</span>
+            <strong class="total-price">${{ total }}</strong>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+</div>
+{% endblock %}

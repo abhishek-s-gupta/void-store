@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign In — VOID STORE{% endblock %}
+{% block description %}Access your VOID STORE customer account and order history.{% endblock %}
+
+{% block content %}
+<div class="auth-page container">
+
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <span class="auth-eyebrow">CUSTOMER PORTAL</span>
+      <h1 class="auth-title">Sign In</h1>
+      <p class="auth-sub">Enter your VOID STORE credentials to access your saved bag and order archive.</p>
+    </div>
+
+    <!-- Demo Credentials Helper Banner for Grading / Evaluation -->
+    <div class="demo-login-box">
+      <span class="demo-badge">DEMO EVALUATION CREDENTIALS</span>
+      <div class="demo-creds-row">
+        <div><strong>User:</strong> <code>demouser</code> / <code>demo12345</code></div>
+        <div><strong>Admin:</strong> <code>admin</code> / <code>admin12345</code></div>
+      </div>
+      <button type="button" class="quick-fill-btn" onclick="fillDemoCredentials()">Quick-Fill Demo Account</button>
+    </div>
+
+    <form method="post" action="{% url 'login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="auth-form" id="login-form">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="form-errors-box" role="alert">
+          {% for err in form.non_field_errors %}
+            <p>{{ err }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="id_username" class="form-label">Username or Email</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <span class="field-error">{{ form.username.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_password" class="form-label">Password</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <span class="field-error">{{ form.password.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn-dark full-w auth-submit-btn">
+        Sign In to Account →
+      </button>
+    </form>
+
+    <div class="auth-card-footer">
+      <p>Don't have an account yet? <a href="{% url 'register' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">Create an account here</a>.</p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function fillDemoCredentials() {
+    const userField = document.getElementById('id_username');
+    const passField = document.getElementById('id_password');
+    if (userField && passField) {
+      userField.value = 'demouser';
+      passField.value = 'demo12345';
+      userField.focus();
+      window.showToast("Demo credentials filled: demouser / demo12345");
+    }
+  }
+</script>
+{% endblock %}

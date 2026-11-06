@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}VOID STORE — Try the Look Runway & Streetwear Archive{% endblock %}
+{% block description %}Six looks, styled head to toe. Explore the runway, isolate a look, and tap a pin to see the piece.{% endblock %}
+
+{% block content %}
+<div class="home-container">
+  <!-- Runway Section Placeholder for Milestone 2 Testing -->
+  <section class="runway-hero-placeholder container" style="padding: 60px 40px; text-align: center; border-bottom: 1px solid var(--line-light);">
+    <span class="shop-eyebrow">VOID RUNWAY 2026</span>
+    <h1 class="shop-title" style="font-size: 48px; margin: 12px 0;">Try the Look.</h1>
+    <p class="shop-subtitle" style="margin: 0 auto 28px; max-width: 50ch;">Six looks, styled head to toe. Arranged in depth on a turning 3D ring with pinned streetwear pieces.</p>
+    <div style="display: flex; gap: 16px; justify-content: center;">
+      <a href="{% url 'shop' %}" class="btn-dark">Explore Full Catalog →</a>
+      <a href="{% url 'shop' %}?category=footwear" class="btn-outline">Footwear Archive</a>
+    </div>
+  </section>
+
+  <!-- Featured Essentials Grid -->
+  <section class="container" style="padding: 64px 40px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px;">
+      <div>
+        <span class="shop-eyebrow">CURATED SILHOUETTES</span>
+        <h2 class="section-title">Essential Pieces</h2>
+      </div>
+      <a href="{% url 'shop' %}" class="btn-outline sm">View All (8) →</a>
+    </div>
+
+    <div class="products-grid">
+      {% for prod in featured_products %}
+        <article class="product-card" data-slug="{{ prod.slug }}">
+          <a href="{{ prod.get_absolute_url }}" class="product-card-media" aria-label="View {{ prod.name }}">
+            <div class="product-media-inner">
+              <img src="{% static prod.image %}" alt="{{ prod.name }}" loading="lazy">
+            </div>
+            {% if prod.original_price %}
+              <span class="card-badge sale-badge">SALE</span>
+            {% else %}
+              <span class="card-badge">ESSENTIAL</span>
+            {% endif %}
+          </a>
+          <div class="product-card-info">
+            <span class="product-card-vendor">{{ prod.vendor }}</span>
+            <h3 class="product-card-title">
+              <a href="{{ prod.get_absolute_url }}">{{ prod.name }}</a>
+            </h3>
+            <div class="product-card-price-row">
+              <span class="product-card-price">${{ prod.price }}</span>
+              {% if prod.original_price %}
+                <s class="product-card-orig-price">${{ prod.original_price }}</s>
+              {% endif %}
+            </div>
+            <div class="product-card-actions">
+              <a href="{{ prod.get_absolute_url }}" class="card-action-btn">Inspect Piece →</a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

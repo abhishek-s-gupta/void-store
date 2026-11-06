@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Shopping Bag — VOID STORE{% endblock %}
+{% block description %}Review selected pieces in your VOID STORE shopping bag.{% endblock %}
+
+{% block content %}
+<div class="cart-page container">
+
+  <header class="cart-page-header">
+    <span class="page-eyebrow">ORDER STAGING</span>
+    <h1 class="page-title">Shopping Bag</h1>
+    <p class="page-sub">Review your pieces before proceeding to checkout. Complete looks receive an automatic 10% bundle discount.</p>
+  </header>
+
+  {% if items %}
+    <div class="cart-layout-grid">
+      <!-- Items Table / List -->
+      <section class="cart-items-section" aria-label="Bag items">
+        <div class="cart-items-table-header">
+          <span class="col-product">Piece</span>
+          <span class="col-price">Unit Price</span>
+          <span class="col-qty">Quantity</span>
+          <span class="col-total">Line Total</span>
+        </div>
+
+        <ul class="cart-items-list">
+          {% for item in items %}
+            <li class="cart-row" data-item-id="{{ item.id }}">
+              <!-- Media & Details -->
+              <div class="cart-row-main">
+                <a href="{% url 'product_detail' item.variant.product.slug %}" class="cart-item-media" aria-label="View {{ item.variant.product.name }}">
+                  <img src="{% static item.variant.product.image %}" alt="{{ item.variant.product.name }}" loading="lazy">
+                </a>
+                <div class="cart-item-details">
+                  <span class="cart-item-vendor">{{ item.variant.product.vendor }}</span>
+                  <h2 class="cart-item-title">
+                    <a href="{% url 'product_detail' item.variant.product.slug %}">{{ item.variant.product.name }}</a>
+                  </h2>
+                  <span class="cart-item-size-badge">Size: <strong>{{ item.variant.size }}</strong></span>
+
+                  {% if item.is_bundle_item %}
+                    <span class="bundle-indicator">
+                      ★ 10% Complete Look Bundle Applied
+                    </span>
+                  {% endif %}
+
+                  <form method="post" action="{% url 'cart_remove' %}" class="cart-remove-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                    <button type="submit" class="cart-remove-link" aria-label="Remove {{ item.variant.product.name }}">Remove piece</button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Unit Price -->
+              <div class="cart-col-price">
+                <span class="unit-price-val">${{ item.effective_unit_price }}</span>
+                {% if item.is_bundle_item %}
+                  <s class="orig-price-val">${{ item.unit_price }}</s>
+                {% endif %}
+              </div>
+
+              <!-- Quantity Controls -->
+              <div class="cart-col-qty">
+                <form method="post" action="{% url 'cart_update' %}" class="cart-qty-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="item_id" value="{{ item.id }}">
+                  <div class="cart-qty-stepper">
+                    <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}" class="qty-step-btn" aria-label="Decrease quantity">−</button>
+                    <span class="qty-step-val">{{ item.quantity }}</span>
+                    <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}" class="qty-step-btn" aria-label="Increase quantity">+</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Line Total -->
+              <div class="cart-col-total">
+                <strong class="line-total-val">${{ item.discounted_line_total }}</strong>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <div class="cart-table-footer">
+          <a href="{% url 'shop' %}" class="continue-shopping-link">← Continue Exploring Catalog</a>
+        </div>
+      </section>
+
+      <!-- Order Summary Card -->
+      <aside class="cart-summary-sidebar" aria-label="Order summary">
+        <div class="summary-card">
+          <h2 class="summary-card-title">Order Summary</h2>
+
+          <div class="summary-row">
+            <span>Subtotal ({{ cart.total_items }} items)</span>
+            <span>${{ subtotal }}</span>
+          </div>
+
+          {% if discount > 0 %}
+            <div class="summary-row bundle-savings-row">
+              <span>Runway Bundle Discount</span>
+              <span class="save-val">−${{ discount }}</span>
+            </div>
+          {% endif %}
+
+          <div class="summary-row">
+            <span>Standard Shipping</span>
+            <span>{% if total >= 200 %}Complimentary{% else %}$15.00{% endif %}</span>
+          </div>
+
+          <hr class="summary-divider">
+
+          <div class="summary-row summary-total-row">
+            <span>Estimated Total</span>
+            <strong class="grand-total">${% if total >= 200 %}{{ total }}{% else %}{{ total|add:15 }}{% endif %}</strong>
+          </div>
+
+          <div class="summary-checkout-actions">
+            <a href="{% url 'checkout' %}" class="btn-dark full-w checkout-cta">Proceed to Checkout →</a>
+          </div>
+
+          <div class="summary-guarantees">
+            <p>✓ 10-day seamless exchange window</p>
+            <p>✓ Cash on Delivery & Mock Payment available</p>
+            <p>✓ All shipments packaged in archival zero-waste boxes</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  {% else %}
+    <div class="cart-empty-wrapper">
+      <div class="cart-empty-card">
+        <svg width="48" height="48" viewBox="0 0 24 26" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M4 8h16l1 16H3L4 8zM8 8V6a4 4 0 0 1 8 0v2"></path>
+        </svg>
+        <h2 class="empty-title">Your shopping bag is empty</h2>
+        <p class="empty-sub">Explore the 3D runway or curated catalog to add structured streetwear silhouettes.</p>
+        <div class="empty-actions">
+          <a href="{% url 'home' %}#runway" class="btn-dark">Try the Look Runway →</a>
+          <a href="{% url 'shop' %}" class="btn-outline">Browse All Essentials</a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

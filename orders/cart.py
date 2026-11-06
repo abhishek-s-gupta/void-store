@@ -19,17 +19,15 @@ def get_or_create_cart(request):
     return cart
 
 
-def merge_carts_on_login(sender, user, request, **kwargs):
+def merge_session_cart(user, session_key):
     """
-    Signal handler: merges anonymous session cart items into the user's persistent cart upon login.
+    Merges items from an anonymous session cart into a user's persistent cart.
     """
-    session_key = request.session.session_key
     if not session_key:
         return
 
-    try:
-        session_cart = Cart.objects.get(session_key=session_key)
-    except Cart.DoesNotExist:
+    session_cart = Cart.objects.filter(session_key=session_key).first()
+    if not session_cart or not session_cart.items.exists():
         return
 
     with transaction.atomic():
@@ -48,6 +46,12 @@ def merge_carts_on_login(sender, user, request, **kwargs):
                 session_item.save()
 
         session_cart.delete()
+
+
+def merge_carts_on_login(sender, user, request, **kwargs):
+    """Signal handler fallback for cart merge."""
+    old_key = getattr(request, "_pre_login_session_key", None) or request.session.session_key
+    merge_session_cart(user, old_key)
 
 
 def add_item_to_cart(cart, product_slug, size_str, quantity=1, is_bundle_item=False, bundle_look=None):
@@ -101,7 +105,6 @@ def add_full_look_bundle(cart, look_id, size_selections):
             key = f"size_{prod.slug}"
             selected_size = size_selections.get(key)
             if not selected_size:
-                # Fallback to first available size
                 sizes = prod.size_list()
                 selected_size = sizes[0] if sizes else "M"
 
