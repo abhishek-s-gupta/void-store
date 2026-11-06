@@ -2398,3 +2398,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     transition-duration: 0.001ms !important;
   }
 }
+
+
+/* Staggered Scroll-Triggered Reveals */
+.product-card, .comp-card, .look-reference-card, .order-card {
+  opacity: 0;
+  transform: translateY(20px);
+  filter: blur(3px);
+  transition: opacity 0.75s var(--ease) var(--stagger-delay, 0s),
+              transform 0.75s var(--ease) var(--stagger-delay, 0s),
+              filter 0.75s var(--ease) var(--stagger-delay, 0s);
+  will-change: transform, opacity;
+}
+
+.product-card.is-revealed, .comp-card.is-revealed, .look-reference-card.is-revealed, .order-card.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card, .comp-card, .look-reference-card, .order-card {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

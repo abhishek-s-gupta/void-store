@@ -1,10 +1,13 @@
 /**
  * VOID STORE — GLOBAL MAIN SCRIPT
- * Vanilla JS client infrastructure: Cart Drawer, Toasts, Route Transitions
+ * Vanilla JS client infrastructure: Cart Drawer, Toasts, Route Transitions,
+ * Staggered Scroll Observer, 60fps Micro-interactions.
  */
 
 (() => {
   'use strict';
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // CSRF token retrieval helper
   function getCsrfToken() {
@@ -30,9 +33,11 @@
   window.updateCartBadge = function(count) {
     document.querySelectorAll('[data-cart-count]').forEach(el => {
       el.textContent = count;
-      el.classList.remove('bounce');
-      void el.offsetWidth; // trigger reflow
-      el.classList.add('bounce');
+      if (!reducedMotion) {
+        el.classList.remove('bounce');
+        void el.offsetWidth; // trigger reflow
+        el.classList.add('bounce');
+      }
     });
   };
 
@@ -45,7 +50,6 @@
   function openDrawer() {
     if (!drawer || !backdrop) return;
     drawer.hidden = false;
-    // Allow DOM render then animate
     requestAnimationFrame(() => {
       drawer.classList.add('is-open');
       backdrop.classList.add('is-open');
@@ -198,6 +202,8 @@
       if (resp.ok && data.ok) {
         window.fetchLatestDrawerData();
         window.showToast(data.message);
+      } else {
+        window.showToast(data.message || "Failed to update quantity.");
       }
     } catch (e) {
       window.showToast("Network error. Please try again.");
@@ -219,26 +225,58 @@
     }
   };
 
-  // Page Transition Curtain
+  // Route Transitions & Staggered Scroll Observer
   document.addEventListener('DOMContentLoaded', () => {
     const curtain = document.getElementById('page-curtain');
     if (curtain) {
+      // Fade out curtain on page load
       curtain.style.opacity = '0';
     }
 
-    // Scroll-triggered subtle reveals
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-revealed');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
+    // Smooth Route Transitions for internal links
+    if (!reducedMotion && curtain) {
+      document.querySelectorAll('a[href]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href');
+          if (
+            !href ||
+            href.startsWith('#') ||
+            href.startsWith('mailto:') ||
+            href.startsWith('tel:') ||
+            link.target === '_blank' ||
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey
+          ) {
+            return;
+          }
 
-    document.querySelectorAll('.product-card, .comp-card, .look-reference-card').forEach(el => {
-      observer.observe(el);
-    });
+          // Trigger smooth fade
+          curtain.style.opacity = '0.35';
+        });
+      });
+    }
+
+    // Scroll-triggered staggered reveals using IntersectionObserver
+    if (!reducedMotion) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll('.product-card, .comp-card, .look-reference-card, .order-card').forEach((el, idx) => {
+        el.style.setProperty('--stagger-delay', `${(idx % 4) * 80}ms`);
+        observer.observe(el);
+      });
+    } else {
+      document.querySelectorAll('.product-card, .comp-card, .look-reference-card, .order-card').forEach(el => {
+        el.classList.add('is-revealed');
+      });
+    }
   });
 
 })();
