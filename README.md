@@ -311,4 +311,4 @@ ALL TESTS PASSED WITH 0 FAILURES.
 ## 📄 License & Attribution
 
 This project is open-source under the [MIT License](LICENSE).  
-Built with precision for **CodeAlpha Full Stack Development Internship | Task 1: Simple E-commerce Store**.
+Built with precision for **CodeAlpha Full Stack Development Internship | Task 1: Simple E-commerce Store**...
